@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useCarritoStore } from './Store/useCarritoStore';
 
-const CardCarousel = ({ data , marcaNombre }) => {
+const CardCarousel = ({ data, marcaNombre }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Filtrar datos por marca
@@ -40,6 +41,71 @@ const CardCarousel = ({ data , marcaNombre }) => {
   const goToSlide = (index) => {
     setCurrentIndex(Math.min(index, maxIndex));
   };
+  const { agregarProducto } = useCarritoStore();
+  // Función para agregar producto al carrito
+  const handleAgregarCarrito = (producto) => {
+    // Usar Zustand para agregar al carrito
+    agregarProducto(producto);
+    
+    // Crear notificación toast personalizada
+    const showToast = (mensaje, tipo = 'success') => {
+      const toastContainer = document.getElementById('toast-container') || (() => {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+        return container;
+      })();
+  
+      const toast = document.createElement('div');
+      toast.className = `toast show align-items-center text-bg-${tipo} border-0`;
+      toast.setAttribute('role', 'alert');
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body d-flex align-items-center">
+            <i class="fas fa-check-circle me-2"></i>
+            <div>
+              <strong>${producto.name}</strong><br>
+              <small>agregado al carrito exitosamente</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      
+      toastContainer.appendChild(toast);
+      
+      // Auto-remove después de 4 segundos
+      setTimeout(() => {
+        if (toast && toast.parentNode) {
+          toast.classList.add('fade');
+          setTimeout(() => {
+            if (toast && toast.parentNode) {
+              toast.parentNode.removeChild(toast);
+            }
+          }, 300);
+        }
+      }, 4000);
+      
+      // Permitir cerrar manualmente
+      const closeBtn = toast.querySelector('.btn-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          if (toast && toast.parentNode) {
+            toast.classList.add('fade');
+            setTimeout(() => {
+              if (toast && toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+              }
+            }, 300);
+          }
+        });
+      }
+    };
+    
+    showToast(`${producto.name} agregado al carrito`);
+  };
 
   return (
     <div className="container-fluid py-5">
@@ -77,15 +143,23 @@ const CardCarousel = ({ data , marcaNombre }) => {
                         src={card.imagen} 
                         className="card-img-top" 
                         alt={card.name}
-                        style={{ height: '200px', objectFit: 'cover' }}
+                        style={{ height: '370px', objectFit: 'cover' }}
                       />
                       <div className="card-body d-flex flex-column">
-                        <h5 className="card-title text-primary">{card.name}</h5>
-                        <p className="card-text flex-grow-1">{card.sabor}</p>
-                        <p className="card-text flex-grow-1">{card.price}</p>
-
-                        <button className="btn btn-outline-primary btn-sm mt-auto">
+                        <div className='d-flex'>
+                          <p className="card-title text-primary fw-bolder">{card.name}</p>
+                          <p className="card-text flex-grow-1 ms-5">sabor: {card.sabor}</p>
+                        </div>
+                        <p className="card-text flex-grow-1">PRECIO : <span className='fw-bolder'>${card.price}</span></p>
+                        <p className='card-text flex-grow-1 lead'>{card.description}</p>
+                        <button className="btn btn-outline-primary">
                           Ver más
+                        </button>
+                        <button 
+                          className='btn btn-outline-primary mt-2' 
+                          onClick={() => handleAgregarCarrito(card)}
+                        >
+                          Agregar al carrito
                         </button>
                       </div>
                     </div>
