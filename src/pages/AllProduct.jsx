@@ -18,13 +18,16 @@ const AllProduct = () => {
 
     return (
         <>
+        <div className='container mt-5'>
+
             {marcasUnicas.map(marca => (
                 <CardCarousel 
-                    key={marca}
-                    data={data} 
-                    marcaNombre={marca}
+                key={marca}
+                data={data} 
+                marcaNombre={marca}
                 />
             ))}
+            </div>
         </>
     )
 }

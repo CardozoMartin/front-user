@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { use, useState } from 'react';
 import { useCarritoStore } from '../Store/useCarritoStore';
+import ModalCompras from './ModalCompras';
 
 
 const CarritoOffcanvas = () => {
@@ -13,7 +14,7 @@ const CarritoOffcanvas = () => {
     getTotalPrecio,
     getTotalItems
   } = useCarritoStore();
-
+const [modalOpen, setModalOpen] = useState(false);
   const totalPrecio = getTotalPrecio();
   const totalItems = getTotalItems();
 
@@ -26,7 +27,15 @@ const CarritoOffcanvas = () => {
 
   const handleCheckout = () => {
     // Aquí puedes implementar la lógica de checkout
-    alert('Funcionalidad de pago en desarrollo...');
+   
+    cerrarCarrito();
+    //redirigir a un modal donde veremos datos de usuarios productos y total y direccion de envio
+    
+    // como hago para abrir un modal desde aqui 
+    // y pasarle los datos del carrito y el total
+    // y que el usuario pueda confirmar su compra
+    setModalOpen(true);
+
   };
 
   const handleVaciarCarrito = () => {
@@ -231,7 +240,12 @@ const CarritoOffcanvas = () => {
           )}
         </div>
       </div>
-      
+      { /* Modal para finalizar la compra */}
+      {modalOpen && (
+
+       <ModalCompras setModalOpen={setModalOpen} modalOpen={modalOpen} ></ModalCompras>
+      )}
+
       {/* Estilos adicionales */}
       <style jsx>{`
         .hover-bg-light:hover {
