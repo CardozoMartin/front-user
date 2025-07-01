@@ -9,12 +9,17 @@ import Router from './Router.jsx'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.min.js';
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { Toaster } from 'sonner'
 const queryClient = new QueryClient()
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
 
       <Router></Router>
+
+      <Toaster
+        position="top-center" 
+        richColors ></Toaster>
     </QueryClientProvider>
   </StrictMode>,
 )
