@@ -59,6 +59,18 @@ const ModalCompras = ({ modalOpen, setModalOpen }) => {
         }
     };
 
+    // Función para manejar cuando el cliente nuevo completa sus datos
+    const handleNewClientComplete = (clienteData) => {
+        console.log('Cliente completado:', clienteData);
+        setCliente(clienteData);
+        setStep('confirm');
+    };
+
+    // Función para volver desde el formulario de cliente nuevo
+    const handleVolverFromNewClient = () => {
+        setStep('clientType');
+    };
+
     const handleNewClientSubmit = (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -208,7 +220,10 @@ const ModalCompras = ({ modalOpen, setModalOpen }) => {
 
                             {/* Paso 2: Formulario cliente nuevo */}
                             {step === 'newClient' && (
-                               <ModalNewCliente></ModalNewCliente>
+                               <ModalNewCliente 
+                                   onClienteComplete={handleNewClientComplete}
+                                   onVolver={handleVolverFromNewClient}
+                               />
                             )}
 
                             {/* Paso 3: Confirmación de compra */}

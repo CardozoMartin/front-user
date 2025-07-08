@@ -2,25 +2,27 @@ import {  useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react'
 import { postCliente } from '../../api/ApiCliente';
 import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
-const ModalNewCliente = () => {
-const guardarCliente = useMutation({
-    mutationFn: postCliente,
-    onSuccess: (data) => {
-        console.log("Cliente creado exitosamente:", data);
-        setError(null); // Limpiar error si todo sale bien
-        // Aquí puedes manejar el éxito, como cerrar el modal o mostrar un mensaje
-    },
-    onError: (error) => {
-        if (error.response && error.response.status === 409) {
-            toast.error('El email ya esta registrado. Por favor, utiliza otro email.');
-        } else {
-            setError("Error al crear el cliente. Intenta nuevamente.");
+const ModalNewCliente = ({ onClienteComplete, onVolver }) => {
+    const guardarCliente = useMutation({
+        mutationFn: postCliente,
+        onSuccess: (data) => {
+            console.log("Cliente creado exitosamente:", data);
+            setError(null); // Limpiar error si todo sale bien
+            // Aquí puedes manejar el éxito, como cerrar el modal o mostrar un mensaje
+        },
+        onError: (error) => {
+            if (error.response && error.response.status === 409) {
+                toast.error('El email ya esta registrado. Por favor, utiliza otro email.');
+            } else {
+                setError("Error al crear el cliente. Intenta nuevamente.");
+            }
+            console.error("Error al crear el cliente:", error.message);
+            // Aquí puedes manejar el error, como mostrar un mensaje de error
         }
-        console.error("Error al crear el cliente:", error.message);
-        // Aquí puedes manejar el error, como mostrar un mensaje de error
-    }
-})
+    })
+
     const [ newCliente, setNewCliente] = useState({
         name: '',
         surname: '',
@@ -30,6 +32,7 @@ const guardarCliente = useMutation({
         dni: ''
     })
     const [error, setError] = useState(null);
+    
     const obtenerDatosDeFormulario = (e) => {
         const { name, value } = e.target;
         setNewCliente({
@@ -39,36 +42,91 @@ const guardarCliente = useMutation({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    //validamos los campos requeridos
-    if(newCliente.name.trim().length === 0 ||
-       newCliente.surname.trim().length === 0 ||
-       newCliente.phone.trim().length === 0 ||
-       newCliente.email.trim().length === 0 ||
-       newCliente.address.trim().length === 0) {
-        setError("Todos los campos son obligatorios");
-        return;
-    
-    }
-    //ahora validamos el formato del telefono
-    const phoneRegex = /^[0-9]{10}$/; // Formato de 10 dígitos
-    if (!phoneRegex.test(newCliente.phone)) {
-        setError("El número de teléfono debe tener 10 dígitos");
-        return;
+
+        //validamos los campos requeridos
+        if(newCliente.name.trim().length === 0 ||
+           newCliente.surname.trim().length === 0 ||
+           newCliente.phone.trim().length === 0 ||
+           newCliente.email.trim().length === 0 ||
+           newCliente.address.trim().length === 0) {
+            setError("Todos los campos son obligatorios");
+            return;
+        }
+        
+        //ahora validamos el formato del telefono
+        const phoneRegex = /^[0-9]{10}$/; // Formato de 10 dígitos
+        if (!phoneRegex.test(newCliente.phone)) {
+            setError("El número de teléfono debe tener 10 dígitos");
+            return;
+        }
+
+        //validamos el formato del email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Formato básico de email
+        if (!emailRegex.test(newCliente.email)) {
+            setError("El email no es válido");
+            return;
+        }
+
+        // Preguntamos si el usuario quiere registrarse como cliente
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success",
+                cancelButton: "btn btn-secondary"
+            },
+            buttonsStyling: false
+        });
+
+        swalWithBootstrapButtons.fire({
+            title: "¿Quieres registrarte como cliente?",
+            text: "Si te registras, podrás realizar pedidos más rápido en el futuro",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Sí, registrarme",
+            cancelButtonText: "No, solo continuar",
+            reverseButtons: false
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // El usuario quiere registrarse - guardamos en la base de datos
+                try {
+                    const clienteRegistrado = await guardarCliente.mutateAsync(newCliente);
+                    toast.success('¡Te has registrado exitosamente como cliente!');
+                    
+                    // Pasamos los datos del cliente registrado al componente padre
+                    if (onClienteComplete) {
+                        onClienteComplete({
+                            ...newCliente,
+                            id: clienteRegistrado.data?.id || clienteRegistrado.id, // ID del cliente registrado
+                            isRegistered: true
+                        });
+                    }
+                    
+                    console.log("Cliente registrado, continuando al siguiente paso");
+                    
+                } catch (error) {
+                    // El error ya se maneja en el onError de la mutación
+                    console.log("Error al registrar cliente");
+                    return; // No continuar si hay error
+                }
+            } else if (result.isDismissed || result.dismiss === Swal.DismissReason.cancel) {
+                // El usuario no quiere registrarse - pasamos los datos temporales
+                toast.info('Continuando con el pedido sin registrarte');
+                
+                // Pasamos los datos temporales al componente padre (mismo destino que el registrado)
+                if (onClienteComplete) {
+                    onClienteComplete({
+                        ...newCliente,
+                        id: `temp_${Date.now()}`, // ID temporal
+                        isRegistered: false
+                    });
+                }
+                
+                console.log("Datos temporales enviados, continuando al siguiente paso");
+                setError(null); // Limpiamos el error
+            }
+        });
     }
 
-    //validamos el formato del email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Formato básico de email
-    if (!emailRegex.test(newCliente.email)) {
-        setError("El email no es válido");
-        return;
-    }
-    //verificamos que tiene el nuevo clientes
-    console.log("Nuevo cliente:", newCliente);
-    // Si todo es válido, enviamos los datos
-    await guardarCliente.mutateAsync(newCliente);
-    setError(null); // Limpiamos el error si todo es correcto
-}
-
+    // Vista original del formulario
     return (
         <form onSubmit={handleSubmit} className="p-4">
             <div className="row g-3">
@@ -197,7 +255,7 @@ const guardarCliente = useMutation({
                 <button
                     type="button"
                     className="btn btn-outline-secondary px-4"
-                    onClick={() => setStep('clientType')}
+                    onClick={() => onVolver && onVolver()}
                     style={{ borderRadius: '12px' }}
                 >
                     <i className="fas fa-arrow-left me-2"></i>

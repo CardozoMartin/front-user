@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCarritoStore } from '../Store/useCarritoStore';
-
+import cart from '../../icons/cart.svg'
 
 const Navbar = () => {
   const { getTotalItems, abrirCarrito } = useCarritoStore();
@@ -13,11 +13,11 @@ const Navbar = () => {
         <div>
           {/* Botón del carrito con badge actualizado */}
           <button 
-            className='btn btn-outline-warning position-relative me-2'
+            className='btn btn-outline position-relative me-2'
             onClick={abrirCarrito}
             title="Abrir carrito"
           >
-            <i className="bi bi-cart4"></i>
+            <img src={cart} alt="Carrito" width="20" height="20" />
             {/* Badge animado con el número de items */}
             {totalItems > 0 && (
               <span 
