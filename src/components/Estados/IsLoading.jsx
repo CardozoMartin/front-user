@@ -1,5 +1,5 @@
 import React from 'react'
-import './IsLoading.css'
+import './loading.css'
 const IsLoading = () => {
   return (
     <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '70vh' }}>

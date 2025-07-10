@@ -1,5 +1,5 @@
 import React from 'react'
-import './isError.css'
+import './error.css'
 const IsError = () => {
   return (
     <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '70vh' }}>
