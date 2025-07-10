@@ -2,6 +2,7 @@ import React from 'react';
 import AllProduct from './pages/AllProduct';
 import Navbar from './components/Common/Navbar';
 import CarritoOffcanvas from './components/Cart/CarritoOffcanvas';
+import { Toaster } from 'sonner';
 
 
 const Router = () => {
@@ -17,6 +18,7 @@ const Router = () => {
       
       {/* Offcanvas del carrito - Se renderiza globalmente */}
       <CarritoOffcanvas />
+      <Toaster richColors position="top-right" closeButton />
     </div>
   );
 };

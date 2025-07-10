@@ -2,7 +2,6 @@ import React, { use, useState } from 'react';
 import { useCarritoStore } from '../Store/useCarritoStore';
 import ModalCompras from './ModalCompras';
 
-
 const CarritoOffcanvas = () => {
   const {
     carrito,
@@ -14,28 +13,49 @@ const CarritoOffcanvas = () => {
     getTotalPrecio,
     getTotalItems
   } = useCarritoStore();
-const [modalOpen, setModalOpen] = useState(false);
+  
+  const [modalOpen, setModalOpen] = useState(false);
   const totalPrecio = getTotalPrecio();
   const totalItems = getTotalItems();
 
   const handleCantidadChange = (productId, nuevaCantidad) => {
     const cantidad = parseInt(nuevaCantidad);
-    if (cantidad >= 0) {
+    const producto = carrito.find(item => item.id === productId);
+    
+    // Verificar que la cantidad esté dentro del rango permitido
+    if (cantidad >= 1 && cantidad <= producto.stock) {
       actualizarCantidad(productId, cantidad);
+    } else if (cantidad > producto.stock) {
+      // Si intenta poner más del stock disponible, establecer al máximo stock
+      actualizarCantidad(productId, producto.stock);
+    }
+  };
+
+  const handleIncrementarCantidad = (productId) => {
+    const producto = carrito.find(item => item.id === productId);
+    if (producto && producto.cantidad < producto.stock) {
+      actualizarCantidad(productId, producto.cantidad + 1);
+    }
+  };
+
+  const handleDecrementarCantidad = (productId) => {
+    const producto = carrito.find(item => item.id === productId);
+    if (producto && producto.cantidad > 1) {
+      actualizarCantidad(productId, producto.cantidad - 1);
     }
   };
 
   const handleCheckout = () => {
-    // Aquí puedes implementar la lógica de checkout
-   
-    cerrarCarrito();
-    //redirigir a un modal donde veremos datos de usuarios productos y total y direccion de envio
+    // Verificar stock antes de proceder al checkout
+    const productosConStockInsuficiente = carrito.filter(item => item.cantidad > item.stock);
     
-    // como hago para abrir un modal desde aqui 
-    // y pasarle los datos del carrito y el total
-    // y que el usuario pueda confirmar su compra
+    if (productosConStockInsuficiente.length > 0) {
+      alert('Algunos productos en tu carrito exceden el stock disponible. Por favor, ajusta las cantidades.');
+      return;
+    }
+    
+    cerrarCarrito();
     setModalOpen(true);
-
   };
 
   const handleVaciarCarrito = () => {
@@ -141,12 +161,27 @@ const [modalOpen, setModalOpen] = useState(false);
                           </div>
                         </div>
                         
+                        {/* Mostrar advertencia si la cantidad excede el stock */}
+                        {item.cantidad > item.stock && (
+                          <div className="alert alert-warning py-1 px-2 mb-2" style={{ fontSize: '0.75rem' }}>
+                            <i className="fas fa-exclamation-triangle me-1"></i>
+                            Stock insuficiente (disponible: {item.stock})
+                          </div>
+                        )}
+                        
+                        {/* Mostrar stock disponible */}
+                        <div className="mb-2">
+                          <small className="text-muted">
+                            Stock disponible: {item.stock} unidades
+                          </small>
+                        </div>
+                        
                         {/* Controles de cantidad */}
                         <div className="d-flex align-items-center justify-content-between">
                           <div className="d-flex align-items-center">
                             <button 
                               className="btn btn-outline-secondary btn-sm"
-                              onClick={() => actualizarCantidad(item.id, item.cantidad - 1)}
+                              onClick={() => handleDecrementarCantidad(item.id)}
                               disabled={item.cantidad <= 1}
                               style={{ width: '30px', height: '30px' }}
                             >
@@ -154,18 +189,23 @@ const [modalOpen, setModalOpen] = useState(false);
                             </button>
                             <input 
                               type="number"
-                              className="form-control form-control-sm mx-2 text-center fw-bold"
+                              className={`form-control form-control-sm mx-2 text-center fw-bold ${
+                                item.cantidad > item.stock ? 'is-invalid' : ''
+                              }`}
                               style={{ width: '60px' }}
                               value={item.cantidad}
                               min="1"
+                              max={item.stock}
                               onChange={(e) => handleCantidadChange(item.id, e.target.value)}
                             />
+
                             <button 
                               className="btn btn-outline-secondary btn-sm"
-                              onClick={() => actualizarCantidad(item.id, item.cantidad + 1)}
+                              onClick={() => handleIncrementarCantidad(item.id)}
+                              disabled={item.cantidad >= item.stock}
                               style={{ width: '30px', height: '30px' }}
                             >
-                              <span className='text-center aling-items-center mt-4 fs-5 fw-bolder'>+</span>
+                              <span className='text-center align-items-center mt-4 fs-5 fw-bolder'>+</span>
                             </button>
                           </div>
                           
@@ -214,6 +254,7 @@ const [modalOpen, setModalOpen] = useState(false);
                   <button 
                     className="btn btn-primary btn-lg"
                     onClick={handleCheckout}
+                    disabled={carrito.some(item => item.cantidad > item.stock)}
                   >
                     <i className="fas fa-credit-card me-2"></i>
                     Proceder al Pago
@@ -240,10 +281,10 @@ const [modalOpen, setModalOpen] = useState(false);
           )}
         </div>
       </div>
-      { /* Modal para finalizar la compra */}
+      
+      {/* Modal para finalizar la compra */}
       {modalOpen && (
-
-       <ModalCompras setModalOpen={setModalOpen} modalOpen={modalOpen} ></ModalCompras>
+        <ModalCompras setModalOpen={setModalOpen} modalOpen={modalOpen} />
       )}
 
       {/* Estilos adicionales */}
@@ -255,6 +296,10 @@ const [modalOpen, setModalOpen] = useState(false);
         
         .offcanvas-end {
           box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .is-invalid {
+          border-color: #dc3545 !important;
         }
       `}</style>
     </>

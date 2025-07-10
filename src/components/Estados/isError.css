@@ -1,0 +1,21 @@
+.error-icon {
+    font-size: 4rem;
+    animation: shake 1s ease-in-out infinite;
+    display: inline-block;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px) rotate(-5deg);
+    }
+
+    75% {
+        transform: translateX(5px) rotate(5deg);
+    }
+}
