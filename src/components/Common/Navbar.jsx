@@ -1,6 +1,5 @@
 import React from 'react';
 import { useCarritoStore } from '../Store/useCarritoStore';
-import cart from '../../icons/cart.svg'
 
 const Navbar = () => {
   const { getTotalItems, abrirCarrito } = useCarritoStore();
@@ -17,7 +16,10 @@ const Navbar = () => {
             onClick={abrirCarrito}
             title="Abrir carrito"
           >
-            <img src={cart} alt="Carrito" width="20" height="20" />
+            {/* Bootstrap cart icon SVG */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-cart" viewBox="0 0 16 16">
+              <path d="M0 1.5A.5.5 0 0 1 .5 1h1a.5.5 0 0 1 .485.379L2.89 5H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 14H4a.5.5 0 0 1-.491-.408L1.01 2H.5a.5.5 0 0 1-.5-.5zm3.14 4l1.25 6.5h7.22l1.25-6.5H3.14zM5 12a2 2 0 1 0 4 0H5z"/>
+            </svg>
             {/* Badge animado con el número de items */}
             {totalItems > 0 && (
               <span 
