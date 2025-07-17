@@ -12,3 +12,14 @@ export const postCart = async (cart) => {
         throw error;
     }
 }
+
+export const getLastCart = async (phone)=>{
+
+    try {
+        const res = await axios.get(`${API_URL}/api/cart/lastcart/${phone}`)
+        return res.data;
+    } catch (error) {
+        console.error("Error al obtener el último carrito:", error);
+        throw error;
+    }
+}
