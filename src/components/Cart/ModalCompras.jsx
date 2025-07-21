@@ -15,7 +15,8 @@ const ModalCompras = ({ modalOpen, setModalOpen }) => {
         id: "",
         name: "",
         phone: "",
-        email: ""
+        email: "",
+        direccion:""
     });
     const [searchPhone, setSearchPhone] = useState("");
     const [clientesEncontrados, setClientesEncontrados] = useState([]);
